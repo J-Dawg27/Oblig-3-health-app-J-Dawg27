@@ -1,12 +1,32 @@
 import json
 from pathlib import Path
 from collections import Counter
-from health_app.health import Health
 
-FILE = Path("health_records.json")
+from .health import Health
 
+
+FILE = Path("data/health_records.json")
+
+def load_data():
+
+    if not FILE.exists():
+        return []
+
+    with open(FILE) as f:
+        return json.load(f)
+
+
+def save_data(record):
+
+    data = load_data()
+
+    data.append(record)
+
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
 def save_records(records):
+
     data = [
         {
             "name": h.name,
@@ -17,20 +37,32 @@ def save_records(records):
         }
         for h in records
     ]
+
     with open(FILE, "w") as f:
         json.dump(data, f, indent=2)
 
 
 def load_records():
+
     if not FILE.exists():
         return []
+
     with open(FILE) as f:
         records = json.load(f)
-    return [Health(r["name"], r["weight_kg"], r["height_m"]) for r in records]
 
+    return [
+        Health(
+            r["name"],
+            r["weight_kg"],
+            r["height_m"]
+        )
+        for r in records
+    ]
 
-def get_statistics(filename: str = "health_records.json") -> dict:
+def get_statistics(filename: str = "data/health_records.json"):
+
     path = Path(filename)
+
     if not path.exists():
         return {
             "total_records": 0,
@@ -41,19 +73,14 @@ def get_statistics(filename: str = "health_records.json") -> dict:
 
     with open(path) as f:
         data = json.load(f)
-    if not data:
-        return {
-            "total_records": 0,
-            "avg_bmi": 0,
-            "most_common_category": None,
-            "category_distribution": {},
-        }
 
     bmis = [item["bmi"] for item in data]
-    cats = [item["category"] for item in data]
+    categories = [item["category"] for item in data]
 
     avg_bmi = round(sum(bmis) / len(bmis), 2)
-    count = Counter(cats)
+
+    count = Counter(categories)
+
     most_common = count.most_common(1)[0][0]
 
     return {
