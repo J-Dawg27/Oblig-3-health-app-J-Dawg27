@@ -28,4 +28,4 @@ pytest -v
 - `tests/` – testfiler  
 ### Laget av
 Jonas Midthun  
-April 2026
+Mai 2026
